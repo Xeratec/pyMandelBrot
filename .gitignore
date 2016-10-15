@@ -7,11 +7,9 @@ __pycache__/
 *.so
 
 ############################
-# Troja Specific GitIgnore #
+# Others                   #
 ############################
-local/data/**
-local/keys/**
-id
+*.png
 
 ############################
 #Eclipse Specific GitIgnore#
