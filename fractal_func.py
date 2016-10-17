@@ -9,7 +9,21 @@
 import time
 import numpy as np
 
-def mandelbrot_v2(re_min, re_max, im_min, im_max, max_betr, max_iter, res=400, cont=False):
+class fractal_data():
+        def __init__(self, data, calc_t, shape=(400,400), datatype=np.int):
+            self.data = np.zeros(shape, dtype = datatype)
+            self.data = data
+            self.calc_time = calc_t
+            self.max = np.amax(data)
+            self.min = np.min(data[data>0])
+            
+        def info(self):
+            print "Data Shape: " + str(self.data.shape) 
+            print "Calculation Time: %.3fs" % self.calc_time
+            print "Maximum Value: %d" % self.max
+            print "Minimum Value >0: %d" % self.min
+            
+def mandelbrot(re_min, re_max, im_min, im_max, max_betr, max_iter, res=400, cont=False):
     # Save Startime
     start_t = time.time()
     # ix and iy is an 2-dimensional array representing the pixels
@@ -22,7 +36,7 @@ def mandelbrot_v2(re_min, re_max, im_min, im_max, max_betr, max_iter, res=400, c
     c = x+complex(0,1)*y
     # No need of these variables bacuase we only use c    
     del x,y 
-    img = np.zeros(c.shape, dtype= float)
+    img = np.zeros(c.shape, dtype= np.float)
     px.shape = py.shape = c.shape = pix_x*pix_y
     
     z = np.copy(c)
@@ -43,50 +57,6 @@ def mandelbrot_v2(re_min, re_max, im_min, im_max, max_betr, max_iter, res=400, c
         c = c[rem]
         
     calc_t = time.time()-start_t
-    return (img, calc_t)
-
-def mandelbrot_v1_iter(c, max_betr, max_iter, cont=False):
-    z = 0
-    for i in xrange(max_iter):
-        z = z * z + c
-        if abs(z) > max_betr:
-            if cont:
-                log_zn = np.log(abs(z) ) / 2
-                nu = np.log( log_zn / np.log(2) ) / np.log(2)
-                return i + 1 - nu
-            else:
-                return (i + 1)
-    return 0
-
-def mandelbrot_v1(re_min, re_max, im_min, im_max, max_betr, max_iter, res=400, cont=False):
-    # Save Startime
-    start_t = time.time()
-    # Setup X and Y Resulution in points
-    pix_y = int(round(res / (re_max - re_min) * (im_max - im_min)))
-    px = np.arange(res)
-    py = np.arange(pix_y)
-    # Calculate X and Y Values
-    x = np.linspace(re_min, re_max, res)[px]
-    y = np.linspace(im_min, im_max, pix_y)[py] 
-    # Zero out 2-dim array
-    img = np.zeros((len(y), len(x)))
-
     
-    # Call Julia for all
-    for ix in px:
-        for iy in py:
-            c = x[ix] + complex(0, 1 * y[iy])
-            z = 0
-            for i in xrange(max_iter):
-                z *= z
-                z += c
-                if abs(z) > max_betr:
-                    if cont:
-                        log_zn = np.log(abs(z) ) / 2
-                        nu = np.log( log_zn / np.log(2) ) / np.log(2)
-                        img[iy, ix] = i + 1 - nu
-                    else:
-                        img[iy, ix] = (i + 1)
-    
-    calc_t = time.time()-start_t
-    return (img.T, calc_t)
+    data = fractal_data(img, calc_t, shape=img.shape, datatype=img.dtype)
+    return data
