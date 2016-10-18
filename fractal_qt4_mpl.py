@@ -17,7 +17,7 @@ from fractal_func import mandelbrot
 from gtk._gtk import Alignment
 
 
-### Static Config ####
+######  Config #######
 re_min = 0.385
 re_max = 0.395
 im_min = 0.135
@@ -25,9 +25,9 @@ im_max = 0.145
 
 max_betr = 2
 max_iter = 100      
-res = 400  # X Resolution
-cont = True  # Show continual color
-norm = True  # Normalize Values
+res = 400       # X Resolution
+cont = True     # Show continual color
+norm = True     # Normalize Values
 ######################
 
 class AppForm(QMainWindow):
@@ -90,21 +90,20 @@ class AppForm(QMainWindow):
         """
         QMessageBox.about(self, "About the demo", msg.strip())
     #
-    #
+    # Show mouse position in statusbar
     #
     def statusbar_coord(self, event):
         # Show coordinates time in statusbar
-        if (event.xdata is not None and event.ydata is not None):
-            self.coord_text.setText("Re(c): % 7f, Im(c) % 7f" % (event.xdata, event.ydata))
-    
+        if event.inaxes is not None:
+            text = "Re(c): % .5f, Im(c) % .5f" % (event.xdata, event.ydata)
+            self.coord_text.setText(text)
+        
     #
     # Calculates mandelbrot set and updates mpl plot
     #
     def draw(self):
         """ Redraws the figure
         """
-        
-        print self.size()
         # Grap values from textboxes
         re_min = float(unicode(self.textbox_re_min.text()))
         re_max = float(unicode(self.textbox_re_max.text()))
@@ -112,23 +111,27 @@ class AppForm(QMainWindow):
         im_max = float(unicode(self.textbox_im_max.text()))
         max_iter = int(unicode(self.textbox_max_iter.text()))
         
-        # Calculate mandelbrot set
-        fractal = mandelbrot(re_min, re_max, im_min, im_max, max_betr, max_iter, res, cont) 
+        # Grap values from checkboxes
+        self.axes.grid(self.grid_cb.isChecked())
+        cont = self.cont_cb.isChecked()
+        norm = self.norm_cb.isChecked()
         
-        # 
+        # Calculate mandelbrot set
+        self.fractal = mandelbrot(re_min, re_max, im_min, im_max, max_betr, max_iter, res, cont) 
+        
+        # Normalize Values
         if norm:
-            fractal.data[fractal.data > 0] -= fractal.min
+            self.fractal.data[self.fractal.data > 0] -= self.fractal.min
         
         # Show calculation time in statusbar
-        self.status_text.setText("Calculation Time: %0.3fs" % fractal.calc_time)
+        self.status_text.setText("Calculation Time: %0.3fs" % self.fractal.calc_time)
     
         # Load data to mpl plot
-        self.axes.imshow(fractal.data.T, origin="lower left", cmap='jet', extent=[re_min, re_max, im_min, im_max])
+        self.axes.imshow(self.fractal.data.T, origin="lower left", cmap='jet', extent=[re_min, re_max, im_min, im_max])
         self.axes.set_xlabel("Re(c)", labelpad=20)
         self.axes.set_ylabel("Im(c)")
         
         # Show/hide grid
-        self.axes.grid(self.grid_cb.isChecked())
         if self.grid_cb.isChecked():
             self.axes.grid(linewidth=1, linestyle='-')
         # Align layout and redraw plot   
@@ -209,13 +212,14 @@ class AppForm(QMainWindow):
             
     def create_main_frame(self):
         self.main_frame = QWidget()
-        self.main_frame.setMinimumHeight(460)
+        self.main_frame.setMinimumHeight(280)
         
         
         # Create the Figure and FigCanvas objects
         self.fig = Figure((5,10), tight_layout=True)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self.main_frame)
+        
         
         # Add sublot to figure do formatting
         self.axes = self.fig.add_subplot(111)
@@ -248,12 +252,17 @@ class AppForm(QMainWindow):
         self.textbox_max_iter_text = QLabel("Max Iterration: ")
         self.textbox_max_iter.setMinimumWidth(55)
         
-        self.draw_button = QPushButton("&Draw")
-        self.connect(self.draw_button, SIGNAL('clicked()'), self.draw)
-        
-        self.grid_cb = QCheckBox("Show &Grid")
+        self.grid_cb = QCheckBox("Show Grid")
         self.grid_cb.setChecked(False)
-        self.connect(self.grid_cb, SIGNAL('stateChanged(int)'), self.draw)
+        
+        self.cont_cb = QCheckBox("Continuous Coloring")
+        self.cont_cb.setChecked(True)
+        
+        self.norm_cb = QCheckBox("Normalize Values")
+        self.norm_cb.setChecked(True)
+        
+        self.draw_button = QPushButton("Calculate && Draw")
+        self.connect(self.draw_button, SIGNAL('clicked()'), self.draw)
         
         #
         # Layout with box sizers
@@ -262,7 +271,9 @@ class AppForm(QMainWindow):
         grid = QGridLayout()
      
         hbox.addWidget(self.canvas, 3)
+        self.canvas.setCursor(Qt.CrossCursor)
         hbox.addLayout(grid,1)
+        grid.setRowStretch(1,1)
 
         
         grid.addWidget(self.textbox_re_min , 0,1)
@@ -274,10 +285,14 @@ class AppForm(QMainWindow):
         grid.addWidget(self.textbox_im_max  , 3,1)
         grid.addWidget(self.textbox_im_max_text , 3,0)
         grid.addWidget(self.textbox_max_iter , 5,1)
-        grid.addWidget(self.textbox_max_iter_text , 5,0)
+        grid.addWidget(self.textbox_max_iter_text , 5,0)   
+        grid.addWidget(self.grid_cb , 6,0,1,2)
+        grid.addWidget(self.cont_cb , 7,0,1,2)
+        grid.addWidget(self.norm_cb , 8,0,1,2)
         
-        grid.addWidget(self.draw_button , 7,0)
-        grid.addWidget(self.grid_cb , 6,0)
+        grid.addWidget(self.draw_button , 9,0,1,2)
+        grid.addWidget(QLabel(""), 10,0,2,2)
+        
         
         self.main_frame.setLayout(hbox)
         self.setCentralWidget(self.main_frame)  
