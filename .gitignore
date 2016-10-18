@@ -10,6 +10,7 @@ __pycache__/
 # Others                   #
 ############################
 *.png
+example_*.py
 
 ############################
 #Eclipse Specific GitIgnore#
