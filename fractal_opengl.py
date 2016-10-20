@@ -60,6 +60,7 @@ void main (void)
         iter += 0.005;
     }
     gl_FragColor = vec4 (iter, iter, sin(iter*2.00), 1.0);
+    //gl_FragColor = texture1D(tex, (i == iter ? 0.0 : float(i)) / 100.0);
 }
 """
 
@@ -121,13 +122,15 @@ class Shader(object):
 class GLWidget(QGLWidget):
     # default window size
     width, height = 600, 600
-    def __init__(self):
+    def __init__(self, parent=None):
         QGLWidget.__init__(self)
         self.real = -2.0
         self.w = 2.5
         self.imag = -1.25
         self.h = 2.5
-
+        self.setMouseTracking(True)
+        self.parent = parent
+        
     def initializeGL(self):
         self.show_fps = False
         
@@ -171,6 +174,60 @@ class GLWidget(QGLWidget):
         # paint within the whole window
         gl.glViewport(0, 0, width, height)
         
+    #
+    # Calcualtes precision in digital digits
+    #
+    def setCoord(self, re_min, im_min, w, h):
+        # Calculate precision in decimal digits
+        decimals = 3
+        for v in (w, h):
+            if abs(v) <= 1:
+                decimals = round(np.log10(1 / abs(v))) + 2
+        
+        # Round values with calculated precision
+        self.real = round(re_min, int(decimals))
+        self.imag = round(im_min, int(decimals))
+        self.w = round(w, int(decimals))
+        self.h = round(h, int(decimals))
+        
+        if self.parent is not None:
+            # Update textbos values
+            self.parent.textbox_re_min.setText(str(self.real))
+            self.parent.textbox_re_max.setText(str(self.real + self.w))
+            self.parent.textbox_im_min.setText(str(self.imag))
+            self.parent.textbox_im_max.setText(str(self.imag + self.h))
+    
+    def zoom(self, factor):
+        if factor >0:
+            re_min = self.real+factor/4.0 * self.w
+            im_min = self.imag+factor/4.0 * self.h
+            w = self.w/(2.0*factor)
+            h = self.h/(2.0*factor)
+        if factor <0:
+            re_min = self.real-abs(factor)/2.0 * self.w
+            im_min = self.imag-abs(factor)/2.0 * self.h
+            w = self.w*2.0*abs(factor)
+            h = self.h*2.0*abs(factor)
+        
+        self.setCoord(re_min, im_min, w, h)
+                
+    def mousePressEvent(self, event):
+        pos = event.pos()
+        self.buffer = (pos.x(), pos.y())
+        
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.RightButton:
+            return 0
+        elif event.buttons() == Qt.LeftButton:
+            pos = event.pos()
+            d = [self.buffer[0]-pos.x(), self.buffer[1]-pos.y()]
+            d[0] = self.w/self.width *d[0]
+            d[1] = self.h/self.height * d[1]
+            
+            self.setCoord(self.real+d[0], self.imag-d[1], self.w, self.h)
+            self.buffer = (pos.x(), pos.y())            
+            self.repaint()
+            
 if __name__ == '__main__':
     data = np.zeros((10000, 2), dtype=np.float32)
     data[:,0] = np.linspace(-1., 1., len(data))

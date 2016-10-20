@@ -47,8 +47,8 @@ class AppForm(QMainWindow):
         # Render mandelbrot set
         #
         self.setMinimumWidth(620)
-        self.resize(620, 460)
-    
+        self.resize(620, 460)        
+
     #
     # Display infos about application
     #
@@ -73,8 +73,11 @@ class AppForm(QMainWindow):
      16. Oktober 2016
         """
         QMessageBox.about(self, "About the demo", msg.strip())
+    #
+    # Calculates mandelbrot set and updates mpl plot
+    #    
     def on_draw(self):
-         # Grap values from textboxes
+        # Grap values from textboxes
         re_min = float(unicode(self.textbox_re_min.text()))
         re_max = float(unicode(self.textbox_re_max.text()))
         im_min = float(unicode(self.textbox_im_min.text()))
@@ -86,13 +89,26 @@ class AppForm(QMainWindow):
         self.glWidget.imag = im_min
         self.glWidget.h = im_max-im_min
         self.glWidget.repaint()
-        return 0   
+        self.glWidget.setFocus()
+        
+        return 0 
     
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Enter: 
+            self.on_draw()
+        elif event.key() == Qt.Key_Minus:
+            self.glWidget.zoom(-1)
+            self.glWidget.repaint()
+        elif event.key() == Qt.Key_Plus:
+            self.glWidget.zoom(1)
+            self.glWidget.repaint()
+
+      
     def create_main_frame(self):
         self.main_frame = QWidget()
         self.main_frame.setMinimumHeight(280)
         
-        self.glWidget = GLWidget()
+        self.glWidget = GLWidget(self)
         self.glWidget.real = re_min
         self.glWidget.w = re_max-re_min
         self.glWidget.imag = im_min
@@ -160,6 +176,9 @@ class AppForm(QMainWindow):
         
         self.main_frame.setLayout(hbox)
         self.setCentralWidget(self.main_frame)  
+        
+        # Set initial Foucus on glWidget
+        self.glWidget.setFocus()
         
     def create_status_bar(self):
         self.status_text = QLabel("Ready")
