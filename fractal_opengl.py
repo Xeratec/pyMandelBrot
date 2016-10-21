@@ -140,12 +140,13 @@ class GLWidget(QGLWidget):
     # Initialize GLWidget, init variables and set parent
     #
     def __init__(self, parent=None):
+        self.height, self.width = 600, 600
         QGLWidget.__init__(self)
         self.real = -2.0
         self.w = 2.5
         self.imag = -1.25
         self.h = 2.5
-        self.step = 0.00
+        self.step = 0.005
         # Activate Mousetracking for mouseMoveEvent
         self.setMouseTracking(True)
         self.parent = parent
@@ -273,6 +274,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     form = QMainWindow()
     form.setWindowTitle('Mandelbrot Set')
+    form.resize(500,500)
     form.main_frame = GLWidget()
     form.setCentralWidget(form.main_frame)  
     form.show()
