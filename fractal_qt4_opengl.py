@@ -41,7 +41,19 @@ class AppForm(QMainWindow):
         self.setMinimumWidth(620)
         self.resize(620, 460)   
         
-        self.on_draw()     
+        self.on_draw()   
+    
+    #
+    # Save Screenshot
+    #
+    def save_plot(self):
+        file_choices = "PNG (*.png)|*.png"
+        
+        path = unicode(QFileDialog.getSaveFileName(self,
+                        'Save file', '',
+                        file_choices))
+        if path:
+            return 0
 
     #
     # Display infos about application
@@ -84,20 +96,12 @@ class AppForm(QMainWindow):
         return 0 
     
     #
-    # Key Press Event for zooming and drawing
+    # Key Press Event for redraw
     #
     def keyPressEvent(self, event):
         # Repaint with Enter and Return
         if event.key() == Qt.Key_Enter or event.key()==Qt.Key_Return: 
             self.on_draw()
-        # Zoom out with minus
-        elif event.key() == Qt.Key_Minus:
-            self.glWidget.zoom(-1)
-            self.glWidget.repaint()
-        # Zoom out with plus
-        elif event.key() == Qt.Key_Plus:
-            self.glWidget.zoom(1)
-            self.glWidget.repaint()
     
     #
     # Create main_frame; initialize Objects and create Layout
@@ -123,14 +127,8 @@ class AppForm(QMainWindow):
         self.textbox_delta.setMinimumWidth(55)
         
         self.textbox_max_iter = QLineEdit()
-        self.textbox_max_iter_text = QLabel("Max Iterration: ")
+        self.textbox_max_iter_text = QLabel("Max Iter.: ")
         self.textbox_max_iter.setMinimumWidth(55)
-        
-        self.cont_cb = QCheckBox("Continuous Coloring")
-        self.cont_cb.setChecked(True)
-        
-        self.norm_cb = QCheckBox("Normalize Values")
-        self.norm_cb.setChecked(True)
         
         self.draw_button = QPushButton("Calculate && Draw")
         self.connect(self.draw_button, SIGNAL('clicked()'), self.on_draw)
@@ -149,11 +147,9 @@ class AppForm(QMainWindow):
         grid.addWidget(self.textbox_delta , 2,1)
         grid.addWidget(self.textbox_delta_text , 2,0)
         grid.addWidget(self.textbox_max_iter , 3,1)
-        grid.addWidget(self.textbox_max_iter_text , 3,0)   
-        grid.addWidget(self.cont_cb , 4,0,1,2)
-        grid.addWidget(self.norm_cb , 5,0,1,2)
-        grid.addWidget(self.draw_button , 6,0,1,2)
-        grid.addWidget(QLabel(""), 7,0,2,2)
+        grid.addWidget(self.textbox_max_iter_text , 3,0) 
+        grid.addWidget(self.draw_button , 5,0,1,2)
+        grid.addWidget(QLabel(""), 6,0,2,2)
         
         self.main_frame.setLayout(hbox)
         self.setCentralWidget(self.main_frame)  
@@ -163,11 +159,13 @@ class AppForm(QMainWindow):
     
     #
     # Initialize statusbar
-    # Todo: Time to calculate, Coordinates under mouse pointer
     #    
     def create_status_bar(self):
         self.status_text = QLabel("Ready")
+        self.coord_text = QLabel("Re(c): % 7f, Im(c) % 7f" % (0, 0))
+
         self.statusBar().addWidget(self.status_text, 1)
+        self.statusBar().addWidget(self.coord_text, -1)
     
     #
     # Create main menu
@@ -183,9 +181,14 @@ class AppForm(QMainWindow):
         #  
         self.file_menu = self.menuBar().addMenu("&File")
         
+        save_file_action = self.create_action("&Save plot",
+            shortcut="Ctrl+S", slot=self.save_plot,
+            tip="Save the plot")
+        
         quit_action = self.create_action("&Quit", slot=self.close,
             shortcut="Ctrl+Q", tip="Close the application")
-        self.add_actions(self.file_menu, (None, quit_action))
+        self.add_actions(self.file_menu,
+            (save_file_action, None, quit_action))
         
         self.help_menu = self.menuBar().addMenu("&Help")
         
