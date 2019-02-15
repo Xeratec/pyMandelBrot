@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-@file fractal_qt4_opengl.py
+@file fractal_qt5_opengl.py
 @author Philip Wiese
 @date 12 Okt 2016
 @brief Displays Mandelbrot Set with OpenGl
@@ -8,11 +8,11 @@
 '''
 
 import sys
-from fractal_qt4_opengl_lib import GLWidget
+from fractal_qt5_opengl_lib import GLWidget
 # PyQt4 Imports
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 ###  Start Config ####
 re_min = 0.385

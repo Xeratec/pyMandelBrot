@@ -13,7 +13,7 @@ from matplotlib.pyplot import *
 from matplotlib.widgets import RectangleSelector
 from numpy import log10
 
-from fractal_func import mandelbrot
+from fractal_qt4_mpl_lib import mandelbrot
 from gtk._gtk import Alignment
 
 
@@ -24,7 +24,7 @@ im_min = 0.135
 im_max = 0.145
 
 max_betr = 2
-max_iter = 100      
+max_iter = 100
 res = 400       # X Resolution
 cont = True     # Show continual color
 norm = True     # Normalize Values
@@ -34,7 +34,7 @@ class AppForm(QMainWindow):
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setWindowTitle('Mandelbrot Set')
-        
+
         self.create_menu()
         self.create_main_frame()
         self.create_status_bar()
@@ -47,7 +47,7 @@ class AppForm(QMainWindow):
         self.textbox_im_min.setText(str(im_min))
         self.textbox_im_max.setText(str(im_max))
         self.textbox_max_iter.setText(str(max_iter))
-        
+
         #
         # Render mandelbrot set
         #
@@ -57,32 +57,32 @@ class AppForm(QMainWindow):
 
     def save_plot(self):
         file_choices = "PNG (*.png)|*.png"
-        
+
         path = unicode(QFileDialog.getSaveFileName(self,
                         'Save file', '',
                         file_choices))
         if path:
             self.canvas.print_figure(path)
             self.statusBar().showMessage('Saved to %s' % path, 2000)
-    
+
     #
     # Display infos about application
     #
     def on_about(self):
         msg = """Mandelbrot Set Generator:
-        
+
     ### Features ###
      * Click left mouse button and drag to zoom
-     * Enter custom values for ReMin, ReMin, ImMin and ImMax 
+     * Enter custom values for ReMin, ReMin, ImMin and ImMax
      * Show or hide the grid
      * Save the plot to a file using the File menu
      * De-/activate continuous color spectrum
      * De-/activate normalized values
-     
+
      ### Used Libraries ###
      * PyQt4
      * Matplotlib
-     
+
      ### Author ###
      Made by Philip Wiese
      info@maketec.ch
@@ -97,7 +97,7 @@ class AppForm(QMainWindow):
         if event.inaxes is not None:
             text = "Re(c): % .5f, Im(c) % .5f" % (event.xdata, event.ydata)
             self.coord_text.setText(text)
-        
+
     #
     # Calculates mandelbrot set and updates mpl plot
     #
@@ -110,31 +110,31 @@ class AppForm(QMainWindow):
         im_min = float(unicode(self.textbox_im_min.text()))
         im_max = float(unicode(self.textbox_im_max.text()))
         max_iter = int(unicode(self.textbox_max_iter.text()))
-        
+
         # Grap values from checkboxes
         self.axes.grid(self.grid_cb.isChecked())
         cont = self.cont_cb.isChecked()
         norm = self.norm_cb.isChecked()
-        
+
         # Calculate mandelbrot set
-        self.fractal = mandelbrot(re_min, re_max, im_min, im_max, max_betr, max_iter, res, cont) 
-        
+        self.fractal = mandelbrot(re_min, re_max, im_min, im_max, max_betr, max_iter, res, cont)
+
         # Normalize Values
         if norm:
             self.fractal.data[self.fractal.data > 0] -= self.fractal.min
-        
+
         # Show calculation time in statusbar
         self.status_text.setText("Calculation Time: %0.3fs" % self.fractal.calc_time)
-    
+
         # Load data to mpl plot
         self.axes.imshow(self.fractal.data.T, origin="lower left", cmap='jet', extent=[re_min, re_max, im_min, im_max])
         self.axes.set_xlabel("Re(c)", labelpad=20)
         self.axes.set_ylabel("Im(c)")
-        
+
         # Show/hide grid
         if self.grid_cb.isChecked():
             self.axes.grid(linewidth=1, linestyle='-')
-        # Align layout and redraw plot   
+        # Align layout and redraw plot
         self.canvas.draw_idle()
         #self.fig.tight_layout()
 
@@ -142,10 +142,10 @@ class AppForm(QMainWindow):
         # eclick and erelease are the press and release events
         x1, y1 = eclick.xdata, eclick.ydata
         x2, y2 = erelease.xdata, erelease.ydata
-        
+
         # Zoom with left mouse click
         if eclick.button == 1:
-            # Check for valid coordinates            
+            # Check for valid coordinates
             if (x1 != None and y2 != None and x1 != None and y1 != None):
                 self.xmin = min(x1, x2)
                 self.xmax = max(x1, x2)
@@ -153,35 +153,35 @@ class AppForm(QMainWindow):
                 self.ymax = max(y1, y2)
                 # Save array with relative values
                 self.xy = [self.xmax - self.xmin, self.ymax - self.ymin]
-                
+
                 # Calculate precision in decimal digits
                 for v in self.xy:
                     if v <= 1:
                         self.decimals = round(log10(1 / v)) + 2
-                
+
                 # Round values with calculated precision
                 re_min = round(self.xmin, int(self.decimals))
                 re_max = round(self.xmax, int(self.decimals))
                 im_min = round(self.ymin, int(self.decimals))
                 im_max = round(self.ymax, int(self.decimals))
-            
+
                 # Update textbos values
                 self.textbox_re_min.setText(str(re_min))
                 self.textbox_re_max.setText(str(re_max))
                 self.textbox_im_min.setText(str(im_min))
                 self.textbox_im_max.setText(str(im_max))
-                
+
                 # Calculate and draw new mandelbrot set
                 self.draw()
-        
-        # Zoom with right mouse click        
+
+        # Zoom with right mouse click
         if eclick.button == 3:
             # Grap values from textboxes
             re_min = float(unicode(self.textbox_re_min.text()))
             re_max = float(unicode(self.textbox_re_max.text()))
             im_min = float(unicode(self.textbox_im_min.text()))
             im_max = float(unicode(self.textbox_im_max.text()))
-                
+
             self.xy = [ re_max - re_min, im_max - im_min]
 
             # Calculate new values
@@ -189,93 +189,93 @@ class AppForm(QMainWindow):
             re_max = re_max + self.xy[0] / 2
             im_min = im_min - self.xy[1] / 2
             im_max = im_max + self.xy[1] / 2
-            
+
             # Calculate precision in decimal digits
             for v in self.xy:
                 if v <= 1:
                     self.decimals = round(log10(1 / v)) + 2
-            
+
             # Round values with calculated precision
             re_min = round(re_min, int(self.decimals))
             re_max = round(re_max, int(self.decimals))
             im_min = round(im_min, int(self.decimals))
             im_max = round(im_max, int(self.decimals))
-        
+
             # Update textbos values
             self.textbox_re_min.setText(str(re_min))
             self.textbox_re_max.setText(str(re_max))
             self.textbox_im_min.setText(str(im_min))
             self.textbox_im_max.setText(str(im_max))
-            
+
             # Calculate and draw new mandelbrot set
             self.draw()
-            
+
     def create_main_frame(self):
         self.main_frame = QWidget()
         self.main_frame.setMinimumHeight(280)
-        
-        
+
+
         # Create the Figure and FigCanvas objects
         self.fig = Figure((5,10), tight_layout=True)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self.main_frame)
-        
-        
+
+
         # Add sublot to figure do formatting
         self.axes = self.fig.add_subplot(111)
         self.axes.ticklabel_format(style='sci', scilimits=(0,0), axis='both')
-        
+
         # Create zoom event handler
         self.RS = RectangleSelector(self.axes, self.line_select_callback,
                            drawtype='box', useblit=True,
                            button=[1, 3],  # don't use middle button
-                           spancoords='data')                
-        
-        # Other GUI controls      
+                           spancoords='data')
+
+        # Other GUI controls
         self.textbox_re_min = QLineEdit()
         self.textbox_re_min_text = QLabel("ReMin: ")
         self.textbox_re_min.setMinimumWidth(55)
-        
+
         self.textbox_re_max = QLineEdit()
         self.textbox_re_max_text = QLabel("ReMax: ")
         self.textbox_re_max.setMinimumWidth(55)
-        
+
         self.textbox_im_min = QLineEdit()
         self.textbox_im_min_text = QLabel("ImMin: ")
         self.textbox_im_min.setMinimumWidth(55)
-        
+
         self.textbox_im_max = QLineEdit()
         self.textbox_im_max_text = QLabel("ImMax: ")
         self.textbox_im_max.setMinimumWidth(55)
-        
+
         self.textbox_max_iter = QLineEdit()
         self.textbox_max_iter_text = QLabel("Max Iterration: ")
         self.textbox_max_iter.setMinimumWidth(55)
-        
+
         self.grid_cb = QCheckBox("Show Grid")
         self.grid_cb.setChecked(False)
-        
+
         self.cont_cb = QCheckBox("Continuous Coloring")
         self.cont_cb.setChecked(True)
-        
+
         self.norm_cb = QCheckBox("Normalize Values")
         self.norm_cb.setChecked(True)
-        
+
         self.draw_button = QPushButton("Calculate && Draw")
         self.connect(self.draw_button, SIGNAL('clicked()'), self.draw)
-        
+
         #
         # Layout with box sizers
-        # 
+        #
         hbox = QHBoxLayout()
         grid = QGridLayout()
-     
+
         hbox.addWidget(self.canvas, 3)
         self.canvas.setCursor(Qt.CrossCursor)
         hbox.addLayout(grid,1)
         grid.setRowStretch(1,1)
 
-        
+
         grid.addWidget(self.textbox_re_min , 0,1)
         grid.addWidget(self.textbox_re_min_text , 0,0)
         grid.addWidget(self.textbox_re_max  , 1,1)
@@ -285,51 +285,51 @@ class AppForm(QMainWindow):
         grid.addWidget(self.textbox_im_max  , 3,1)
         grid.addWidget(self.textbox_im_max_text , 3,0)
         grid.addWidget(self.textbox_max_iter , 5,1)
-        grid.addWidget(self.textbox_max_iter_text , 5,0)   
+        grid.addWidget(self.textbox_max_iter_text , 5,0)
         grid.addWidget(self.grid_cb , 6,0,1,2)
         grid.addWidget(self.cont_cb , 7,0,1,2)
         grid.addWidget(self.norm_cb , 8,0,1,2)
-        
+
         grid.addWidget(self.draw_button , 9,0,1,2)
         grid.addWidget(QLabel(""), 10,0,2,2)
-        
-        
+
+
         self.main_frame.setLayout(hbox)
-        self.setCentralWidget(self.main_frame)  
-        
+        self.setCentralWidget(self.main_frame)
+
     def create_status_bar(self):
         self.status_text = QLabel("Ready")
         self.coord_text = QLabel("Re(c): % 7f, Im(c) % 7f" % (0, 0))
-        
+
         self.canvas.mpl_connect("motion_notify_event", self.statusbar_coord)
 
         self.statusBar().addWidget(self.status_text, 1)
         self.statusBar().addWidget(self.coord_text, -1)
-        
-    def create_menu(self): 
+
+    def create_menu(self):
         # -- Menu Structure --
         # File
         #     Save plot (Ctrl+S)
         #     Quit (Ctrl+Q)
         # Help
         #    About (F1)
-        #  
+        #
         self.file_menu = self.menuBar().addMenu("&File")
-        
+
         load_file_action = self.create_action("&Save plot",
             shortcut="Ctrl+S", slot=self.save_plot,
             tip="Save the plot")
         quit_action = self.create_action("&Quit", slot=self.close,
             shortcut="Ctrl+Q", tip="Close the application")
-        
+
         self.add_actions(self.file_menu,
             (load_file_action, None, quit_action))
-        
+
         self.help_menu = self.menuBar().addMenu("&Help")
         about_action = self.create_action("&About",
             shortcut='F1', slot=self.on_about,
             tip='About the application')
-        
+
         self.add_actions(self.help_menu, (about_action,))
 
     def add_actions(self, target, actions):
@@ -355,7 +355,7 @@ class AppForm(QMainWindow):
         if checkable:
             action.setCheckable(True)
         return action
-    
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     form = AppForm()

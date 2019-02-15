@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 '''
-@file fractal_opengl.py
+@file fractal_qt5_opengl_lib.py
 @author Philip Wiese
 @date 12 Okt 2016
 @brief PyQt4 QGLWidget to displays Mandelbrot Set with OpenGl
@@ -8,9 +8,9 @@
 
 import sys, time
 # PyQt4 imports
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtOpenGL import QGLWidget
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtOpenGL import QGLWidget
 # PyOpenGL imports
 import OpenGL.GL as gl
 # Numpy imports
@@ -80,11 +80,11 @@ class Shader(object):
         self.vertexShader = self.compile_vertex_shader(vertex_source)
         self.fragmentShader = self.compile_fragment_shader(fragment_source)
         self.shaderProgram = self.link_shader_program(self.vertexShader, self.fragmentShader)
-    
+
     def set_uniform_f(self, name, value):
         location = gl.glGetUniformLocation(self.shaderProgram, name)
         gl.glUniform1f(location, value)
-    
+
     #
     # Pass a variable to the shader
     #
@@ -93,9 +93,9 @@ class Shader(object):
             self.set_uniform_f(name, value)
         else:
             raise TypeError("Only floats are supported so far")
-    
+
     #
-    # Compile a vertex shader from source 
+    # Compile a vertex shader from source
     #
     def compile_vertex_shader(self, source):
         vertex_shader = gl.glCreateShader(gl.GL_VERTEX_SHADER)
@@ -106,12 +106,12 @@ class Shader(object):
         if not(result):
             raise RuntimeError(gl.glGetShaderInfoLog(vertex_shader))
         return vertex_shader
-    
+
     #
     # Compile a fragment shader from source
     #
     def compile_fragment_shader(self, source):
-        
+
         fragment_shader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
         gl.glShaderSource(fragment_shader, source)
         gl.glCompileShader(fragment_shader)
@@ -120,7 +120,7 @@ class Shader(object):
         if not(result):
             raise RuntimeError(gl.glGetShaderInfoLog(fragment_shader))
         return fragment_shader
-    
+
     #
     # Create a shader program from compiled shaders
     #
@@ -156,10 +156,10 @@ class GLWidget(QGLWidget):
         # Activate Mousetracking for mouseMoveEvent
         self.setMouseTracking(True)
         self.parent = parent
-    
+
     #
-    # Initialize OpenGL 
-    # 
+    # Initialize OpenGL
+    #
     def initializeGL(self):
         # Set background color
         gl.glClearColor(0.5,0.5,0.5,0.5)
@@ -170,7 +170,7 @@ class GLWidget(QGLWidget):
         self.imageID = self.loadTex("texture.png")
         gl.glEnable(gl.GL_TEXTURE_1D)
         gl.glBindTexture(gl.GL_TEXTURE_1D, self.imageID)
-    
+
     #
     # Paint the scene
     #
@@ -179,7 +179,7 @@ class GLWidget(QGLWidget):
         self.timer = time.time()
         # Clear the buffer
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-        
+
         gl.glLoadIdentity()
         gl.glUseProgram(self.shaders_program)
         # Set variables in Shader
@@ -188,7 +188,7 @@ class GLWidget(QGLWidget):
         self.shader["imag"] = self.imag
         self.shader["h"] = self.h
         self.shader["step"] = self.step
-                
+
         gl.glBegin(gl.GL_QUADS)
         # Draw a rect with vertexes and set texture coordinates
         gl.glTexCoord2f(0, 0)
@@ -201,7 +201,7 @@ class GLWidget(QGLWidget):
         gl.glVertex2f(-1, 1)
         gl.glEnd()
         gl.glUseProgram(0)
-        
+
         self.timer = time.time() - self.timer
         self.getTtC(self.timer*1000, 5)
         if self.parent is not None:
@@ -209,7 +209,7 @@ class GLWidget(QGLWidget):
                 self.TtC = self.timer*1000
             text = "Time to calculate: %00.2f ms" % self.TtC
             self.parent.status_text.setText(text)
-    
+
     #
     # Calculate TtC (Time to Calculate over a number of frames
     #
@@ -222,7 +222,7 @@ class GLWidget(QGLWidget):
             self.TtC_count = 0
 
         return self.TtC
-    
+
     #
     # Called upon window resizing: reinitialize the viewport.
     #
@@ -233,7 +233,7 @@ class GLWidget(QGLWidget):
         gl.glViewport(0, 0, width, height)
         # Recalculate Mandelbrot dimensions
         self.setCoord(self.real, self.imag, self.w)
-        
+
     #
     # Load texture for OpenGL from file
     #
@@ -253,7 +253,7 @@ class GLWidget(QGLWidget):
             gl.GL_RGB, gl.GL_UNSIGNED_BYTE, imdata
         )
         return ID
-    
+
     #
     # Calcualtes precision in digital digits
     #
@@ -262,22 +262,22 @@ class GLWidget(QGLWidget):
         decimals = 3
         if abs(delta) <= 1:
             decimals = round(np.log10(1 / abs(delta))) + 2
-        
+
         # Round values with calculated precision
         self.real = round(re_min, int(decimals))
         self.imag = round(im_min, int(decimals))
         self.w = round(delta, int(decimals+1))
         self.h = round(self.height*delta/self.width, int(decimals))
-        
+
         if self.parent is not None:
             # Update textbos values
             self.parent.textbox_re_min.setText(str(self.real))
             self.parent.textbox_im_min.setText(str(self.imag))
             self.parent.textbox_delta.setText(str(self.w))
-            
+
     def setIter(self, max_iter):
         self.step = 1.0/max_iter
-    
+
     #
     # Zoom in or out by a given factor
     #
@@ -293,7 +293,7 @@ class GLWidget(QGLWidget):
             im_min = self.imag-abs(factor)/2.0 * self.h
             w = self.w*2.0*abs(factor)
         self.setCoord(re_min, im_min, w)
-        
+
     #
     # Move by factor of w or h
     #
@@ -307,18 +307,18 @@ class GLWidget(QGLWidget):
         if direction==1:
             im_min = self.imag+factor*self.h
         self.setCoord(re_min, im_min, self.w)
-    
+
     #
     # Mouse press event
-    #            
+    #
     def mousePressEvent(self, event):
         # Save mouse position to calculate relative movement
         pos = event.pos()
         self.buffer = (pos.x(), pos.y())
-    
+
     #
     # Move viewport with left drag
-    #   
+    #
     def mouseMoveEvent(self, event):
         pos = event.pos()
         relPos = [self.w/self.width * pos.x()+self.real, -1*self.w/self.width * pos.y()-self.imag]
@@ -326,7 +326,7 @@ class GLWidget(QGLWidget):
         if self.parent is not None:
             text = "Re(c): % .5f, Im(c) % .5f" % (relPos[0], relPos[1])
             self.parent.coord_text.setText(text)
-        
+
         # Mouse drag
         if event.buttons() == Qt.RightButton:
             return 0
@@ -336,11 +336,11 @@ class GLWidget(QGLWidget):
             d = [self.buffer[0]-pos.x(), self.buffer[1]-pos.y()]
             d[0] = self.w/self.width *d[0]
             d[1] = self.h/self.height * d[1]
-            
+
             self.setCoord(self.real+d[0], self.imag-d[1], self.w)
-            self.buffer = (pos.x(), pos.y())            
+            self.buffer = (pos.x(), pos.y())
             self.repaint()
-            
+
     #
     # Key Press Event for zoom and move
     #
@@ -357,21 +357,21 @@ class GLWidget(QGLWidget):
         elif event.key() == Qt.Key_Down:
             self.move(1,-0.25)
         elif event.key() == Qt.Key_Left:
-            self.move(0,-0.25)    
-        elif event.key() == Qt.Key_Right:    
+            self.move(0,-0.25)
+        elif event.key() == Qt.Key_Right:
             self.move(0,0.25)
-        
+
         self.repaint()
 
 #
 # Main function for debugging
-#           
+#
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     form = QMainWindow()
     form.setWindowTitle('Mandelbrot Set')
     form.resize(500,500)
     form.main_frame = GLWidget()
-    form.setCentralWidget(form.main_frame)  
+    form.setCentralWidget(form.main_frame)
     form.show()
     app.exec_()
