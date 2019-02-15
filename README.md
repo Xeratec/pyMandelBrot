@@ -1,5 +1,6 @@
 # Mandelbrot Set Drawer
 ### Mandelbrot drawer using MatplotLib or OpenGL with Python 3
+![alt text](screenshot.png "Sceenshot")
 
 ## Usage
 ### Dependencies
