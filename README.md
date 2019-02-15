@@ -27,7 +27,7 @@ python3 fractal_qt4_mpl.py
 ```
 
 ### Texture
-You can easily change the texture by replacing *texture.png*
+You can easily change the texture by replacing *texture.png*  
 ![alt text](texture.png "Default Texture")
 
 [Online Gradient Generator](http://angrytools.com/gradient/image/)
