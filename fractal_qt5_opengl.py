@@ -51,9 +51,9 @@ class AppForm(QMainWindow):
     def save_plot(self):
         file_choices = "PNG (*.png)|*.png"
 
-        path = unicode(QFileDialog.getSaveFileName(self,
+        path = QFileDialog.getSaveFileName(self,
                         'Save file', '',
-                        file_choices))
+                        file_choices)
         if path:
             return 0
 
