@@ -68,7 +68,7 @@ class AppForm(QMainWindow):
      * Drag with the mouse to move the viewport
 
      ### Used Libraries ###
-     * PyQt4
+     * PyQt5
      * PyOpenGL
      * Numpy
 
